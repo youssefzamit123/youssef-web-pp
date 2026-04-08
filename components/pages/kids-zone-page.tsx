@@ -13,6 +13,9 @@ import {
   Search,
   Send,
   Brain,
+  Gift,
+  Clock3,
+  Gamepad2,
 } from 'lucide-react';
 
 const gameColors = ['bg-pink-400', 'bg-sky-400', 'bg-yellow-400', 'bg-green-400', 'bg-orange-400'];
@@ -29,6 +32,21 @@ type DoctorItem = {
   name: string;
   city: string;
   specialty: string;
+};
+
+type RewardItem = {
+  id: string;
+  title: string;
+  cost: number;
+  description: string;
+};
+
+type LoyaltyProfile = {
+  patientEmail: string;
+  role: 'kid' | 'adult';
+  points: number;
+  minutesSpent: number;
+  collectedRewards: string[];
 };
 
 const quizQuestions = [
@@ -75,6 +93,12 @@ export function KidsZonePage() {
   ]);
   const [quizIndex, setQuizIndex] = useState(0);
   const [quizMessage, setQuizMessage] = useState('');
+  const [comboClicks, setComboClicks] = useState(0);
+  const [memoryTarget, setMemoryTarget] = useState(randomIndex(6) + 1);
+  const [memoryMessage, setMemoryMessage] = useState('Mémorise le numéro secret et clique dessus.');
+  const [loyalty, setLoyalty] = useState<LoyaltyProfile | null>(null);
+  const [rewards, setRewards] = useState<RewardItem[]>([]);
+  const [rewardMessage, setRewardMessage] = useState('');
 
   useEffect(() => {
     const loadDoctors = async () => {
@@ -129,6 +153,77 @@ export function KidsZonePage() {
     loadChats();
   }, [selectedDoctorId, user?.email]);
 
+  useEffect(() => {
+    const loadLoyalty = async () => {
+      if (!user?.email) return;
+
+      try {
+        const response = await fetch(`/api/loyalty?patientEmail=${encodeURIComponent(user.email)}`);
+        const data = await response.json();
+        if (response.ok) {
+          setLoyalty(data.profile || null);
+          setRewards(Array.isArray(data.availableRewards) ? data.availableRewards : []);
+        }
+      } catch {
+        setLoyalty(null);
+      }
+    };
+
+    loadLoyalty();
+  }, [user?.email]);
+
+  useEffect(() => {
+    if (!user?.email) return;
+
+    const timer = setInterval(async () => {
+      try {
+        const response = await fetch('/api/loyalty', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            patientEmail: user.email,
+            action: 'heartbeat',
+            minutes: 1,
+          }),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          setLoyalty(data.profile || null);
+          setRewards(Array.isArray(data.availableRewards) ? data.availableRewards : []);
+        }
+      } catch {
+        // silent heartbeat failure
+      }
+    }, 60000);
+
+    return () => clearInterval(timer);
+  }, [user?.email]);
+
+  const awardLoyalty = async (minutes = 1) => {
+    if (!user?.email) return;
+
+    try {
+      const response = await fetch('/api/loyalty', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patientEmail: user.email,
+          action: 'heartbeat',
+          minutes,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setLoyalty(data.profile || null);
+        setRewards(Array.isArray(data.availableRewards) ? data.availableRewards : []);
+      }
+    } catch {
+      // silent points failure
+    }
+  };
+
   const title = useMemo(() => {
     if (stars >= 15) return 'Super Héros du Sourire !';
     if (stars >= 8) return 'Champion en progression';
@@ -151,6 +246,7 @@ export function KidsZonePage() {
       setStars(prev => prev + 1);
       setMessage('Bravo ! Tu as trouvé la bonne couleur ✨');
       setTargetColor(randomIndex(gameColors.length));
+      void awardLoyalty(1);
     } else {
       setMessage('Presque ! Essaie encore 🌈');
     }
@@ -173,6 +269,7 @@ export function KidsZonePage() {
     if (index === question.correct) {
       setStars(prev => prev + 2);
       setQuizMessage('Bonne réponse ! +2 étoiles');
+      void awardLoyalty(1);
     } else {
       setQuizMessage('Presque. On continue !');
     }
@@ -219,8 +316,59 @@ export function KidsZonePage() {
         `Rendez-vous enregistré avec ${doctor?.name} le ${appointmentDate} à ${appointmentTime} depuis ${appointmentLocation}.`
       );
       setStars(prev => prev + 1);
+      void awardLoyalty(1);
     } catch {
       setAppointmentMessage('Erreur réseau pendant la création du rendez-vous.');
+    }
+  };
+
+  const handleComboBrush = () => {
+    const next = comboClicks + 1;
+    setComboClicks(next);
+
+    if (next % 15 === 0) {
+      setStars(prev => prev + 3);
+      setRewardMessage('Super combo ! +3 étoiles et points fidélité.');
+      void awardLoyalty(2);
+    }
+  };
+
+  const handleMemoryGuess = (guess: number) => {
+    if (guess === memoryTarget) {
+      setStars(prev => prev + 2);
+      setMemoryMessage('Excellent ! Tu as une super mémoire !');
+      void awardLoyalty(1);
+    } else {
+      setMemoryMessage('Presque ! Essaye encore.');
+    }
+    setMemoryTarget(randomIndex(6) + 1);
+  };
+
+  const handleCollectReward = async (rewardId: string) => {
+    if (!user?.email) return;
+
+    try {
+      const response = await fetch('/api/loyalty', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patientEmail: user.email,
+          action: 'collect',
+          rewardId,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        setRewardMessage(data?.error || 'Impossible de récupérer cette récompense.');
+        return;
+      }
+
+      setLoyalty(data.profile || null);
+      setRewards(Array.isArray(data.availableRewards) ? data.availableRewards : []);
+      setRewardMessage(`Récompense récupérée: ${data.reward?.title || 'cadeau'}.`);
+    } catch {
+      setRewardMessage('Erreur réseau pendant la récupération du cadeau.');
     }
   };
 
@@ -397,6 +545,97 @@ export function KidsZonePage() {
             </div>
           </section>
         </div>
+
+        <div className="grid lg:grid-cols-2 gap-6">
+          <section className="rounded-3xl border border-border/70 bg-card/90 p-6 shadow-xl">
+            <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+              <Gamepad2 className="w-5 h-5" />
+              Nouveau jeu: Combo brossage
+            </h2>
+            <p className="text-sm text-muted-foreground mt-2">
+              Clique vite sur le bouton. Chaque combo de 15 clics donne des étoiles et des points.
+            </p>
+            <div className="mt-4 flex items-center justify-between rounded-xl border border-border bg-background px-4 py-3">
+              <span className="text-sm text-muted-foreground">Total clics</span>
+              <span className="text-xl font-black text-foreground">{comboClicks}</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleComboBrush}
+              className="mt-4 w-full rounded-xl bg-primary text-primary-foreground py-3 font-bold hover:bg-primary/90 transition-colors"
+            >
+              Brosser +1
+            </button>
+          </section>
+
+          <section className="rounded-3xl border border-border/70 bg-card/90 p-6 shadow-xl">
+            <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+              <Brain className="w-5 h-5" />
+              Nouveau jeu: Mémoire flash
+            </h2>
+            <p className="text-sm text-muted-foreground mt-2">{memoryMessage}</p>
+            <p className="mt-3 text-sm font-semibold text-foreground">Trouve le chiffre magique</p>
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleMemoryGuess(idx + 1)}
+                  className="rounded-xl border border-border bg-background px-3 py-2 font-semibold text-foreground hover:bg-secondary/70 transition-colors"
+                >
+                  {idx + 1}
+                </button>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        <section className="rounded-3xl border border-border/70 bg-card/90 p-6 shadow-xl">
+          <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+            <Gift className="w-5 h-5" />
+            Coffre cadeaux fidélité
+          </h2>
+
+          <div className="mt-4 grid md:grid-cols-3 gap-3">
+            <div className="rounded-xl border border-border bg-background p-4">
+              <p className="text-xs text-muted-foreground">Points</p>
+              <p className="text-2xl font-black text-foreground">{loyalty?.points || 0}</p>
+            </div>
+            <div className="rounded-xl border border-border bg-background p-4">
+              <p className="text-xs text-muted-foreground inline-flex items-center gap-1"><Clock3 className="w-3 h-3" />Temps passé</p>
+              <p className="text-2xl font-black text-foreground">{loyalty?.minutesSpent || 0} min</p>
+            </div>
+            <div className="rounded-xl border border-border bg-background p-4">
+              <p className="text-xs text-muted-foreground">Objets collectés</p>
+              <p className="text-2xl font-black text-foreground">{loyalty?.collectedRewards?.length || 0}</p>
+            </div>
+          </div>
+
+          <div className="mt-5 grid md:grid-cols-3 gap-3">
+            {rewards.map(reward => {
+              const alreadyCollected = loyalty?.collectedRewards?.includes(reward.id);
+              const canCollect = !alreadyCollected && (loyalty?.points || 0) >= reward.cost;
+
+              return (
+                <div key={reward.id} className="rounded-xl border border-border bg-background p-4">
+                  <p className="font-semibold text-foreground">{reward.title}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{reward.description}</p>
+                  <p className="text-xs mt-2 text-primary font-semibold">Coût: {reward.cost} points</p>
+                  <button
+                    type="button"
+                    onClick={() => handleCollectReward(reward.id)}
+                    disabled={!canCollect}
+                    className="mt-3 w-full rounded-lg py-2 text-sm font-semibold bg-primary text-primary-foreground disabled:bg-secondary disabled:text-muted-foreground disabled:cursor-not-allowed"
+                  >
+                    {alreadyCollected ? 'Déjà récupéré' : canCollect ? 'Récupérer' : 'Points insuffisants'}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          {rewardMessage && <p className="mt-3 text-sm font-semibold text-emerald-700">{rewardMessage}</p>}
+        </section>
 
         <div className="grid lg:grid-cols-2 gap-6">
           <section className="rounded-3xl border border-border/70 bg-card/90 p-6 shadow-xl">

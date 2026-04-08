@@ -30,6 +30,15 @@ type PatientRecord = Patient & {
   patientEmail: string;
 };
 
+type LoyaltyRecord = {
+  patientEmail: string;
+  role: 'kid' | 'adult';
+  points: number;
+  minutesSpent: number;
+  collectedRewards: string[];
+  lastHeartbeatAt?: string;
+};
+
 type DatabaseData = {
   users: User[];
   doctors: DoctorRecord[];
@@ -37,6 +46,7 @@ type DatabaseData = {
   appointments: AppointmentRecord[];
   chats: ChatRecord[];
   activityFeed: ActivityFeedItem[];
+  loyalty: LoyaltyRecord[];
 };
 
 const DB_PATH = path.join(process.cwd(), 'data', 'database.json');
@@ -53,6 +63,7 @@ async function ensureDatabaseFile() {
       appointments: [],
       chats: [],
       activityFeed: [],
+      loyalty: [],
     };
     await fs.writeFile(DB_PATH, JSON.stringify(initialData, null, 2), 'utf8');
   }
@@ -61,7 +72,17 @@ async function ensureDatabaseFile() {
 export async function readDatabase(): Promise<DatabaseData> {
   await ensureDatabaseFile();
   const file = await fs.readFile(DB_PATH, 'utf8');
-  return JSON.parse(file) as DatabaseData;
+  const parsed = JSON.parse(file) as Partial<DatabaseData>;
+
+  return {
+    users: parsed.users || [],
+    doctors: parsed.doctors || [],
+    patients: parsed.patients || [],
+    appointments: parsed.appointments || [],
+    chats: parsed.chats || [],
+    activityFeed: parsed.activityFeed || [],
+    loyalty: parsed.loyalty || [],
+  };
 }
 
 export async function writeDatabase(data: DatabaseData) {
@@ -88,4 +109,4 @@ export function calcAge(dateOfBirth?: string) {
   return age;
 }
 
-export type { DatabaseData, DoctorRecord, AppointmentRecord, ChatRecord, PatientRecord };
+export type { DatabaseData, DoctorRecord, AppointmentRecord, ChatRecord, PatientRecord, LoyaltyRecord };

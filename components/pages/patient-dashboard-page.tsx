@@ -11,8 +11,26 @@ import {
   AlertCircle,
   TrendingUp,
   Phone,
+  CreditCard,
+  Award,
+  Gift,
 } from 'lucide-react';
 import type { Appointment, Patient, RiskPrediction } from '@/lib/types';
+
+type RewardItem = {
+  id: string;
+  title: string;
+  cost: number;
+  description: string;
+};
+
+type LoyaltyProfile = {
+  patientEmail: string;
+  role: 'kid' | 'adult';
+  points: number;
+  minutesSpent: number;
+  collectedRewards: string[];
+};
 
 const statusColors = {
   'confirmé': 'bg-green-500/10 text-green-700 dark:text-green-300 border-green-500/30',
@@ -30,6 +48,9 @@ export function PatientDashboardPage() {
   const { user } = useAppContext();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loyalty, setLoyalty] = useState<LoyaltyProfile | null>(null);
+  const [rewards, setRewards] = useState<RewardItem[]>([]);
+  const [loyaltyMessage, setLoyaltyMessage] = useState('');
 
   useEffect(() => {
     const loadData = async () => {
@@ -51,6 +72,53 @@ export function PatientDashboardPage() {
     };
 
     loadData();
+  }, [user?.email]);
+
+  useEffect(() => {
+    const loadLoyalty = async () => {
+      if (!user?.email) return;
+
+      try {
+        const response = await fetch(`/api/loyalty?patientEmail=${encodeURIComponent(user.email)}`);
+        const data = await response.json();
+        if (response.ok) {
+          setLoyalty(data.profile || null);
+          setRewards(Array.isArray(data.availableRewards) ? data.availableRewards : []);
+        }
+      } catch {
+        setLoyalty(null);
+      }
+    };
+
+    loadLoyalty();
+  }, [user?.email]);
+
+  useEffect(() => {
+    if (!user?.email) return;
+
+    const timer = setInterval(async () => {
+      try {
+        const response = await fetch('/api/loyalty', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            patientEmail: user.email,
+            action: 'heartbeat',
+            minutes: 1,
+          }),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          setLoyalty(data.profile || null);
+          setRewards(Array.isArray(data.availableRewards) ? data.availableRewards : []);
+        }
+      } catch {
+        // silent
+      }
+    }, 60000);
+
+    return () => clearInterval(timer);
   }, [user?.email]);
 
   const patient =
@@ -96,6 +164,48 @@ export function PatientDashboardPage() {
       : patient.riskLevel === 'Modéré'
         ? 'bg-amber-500/10 border-amber-500/30'
         : 'bg-green-500/10 border-green-500/30';
+
+  const fidelityTier =
+    (loyalty?.points || 0) >= 200
+      ? 'Or'
+      : (loyalty?.points || 0) >= 100
+        ? 'Argent'
+        : 'Bronze';
+
+  const cardColor =
+    fidelityTier === 'Or'
+      ? 'from-amber-500 to-yellow-400'
+      : fidelityTier === 'Argent'
+        ? 'from-slate-400 to-slate-300'
+        : 'from-orange-600 to-orange-400';
+
+  const handleCollectReward = async (rewardId: string) => {
+    if (!user?.email) return;
+
+    try {
+      const response = await fetch('/api/loyalty', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patientEmail: user.email,
+          action: 'collect',
+          rewardId,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        setLoyaltyMessage(data?.error || 'Impossible de récupérer cette récompense.');
+        return;
+      }
+
+      setLoyalty(data.profile || null);
+      setRewards(Array.isArray(data.availableRewards) ? data.availableRewards : []);
+      setLoyaltyMessage(`Récompense fidélité récupérée: ${data.reward?.title || 'cadeau'}.`);
+    } catch {
+      setLoyaltyMessage('Erreur réseau fidélité.');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-secondary/50">
@@ -295,6 +405,63 @@ export function PatientDashboardPage() {
                 Contacter
               </button>
             </div>
+
+            {patient.age >= 18 && (
+              <div className="bg-card text-card-foreground rounded-xl border border-border/50 p-6">
+                <h2 className="text-lg font-bold text-foreground mb-5">Carte fidélité</h2>
+
+                <div className={`rounded-2xl bg-gradient-to-r ${cardColor} p-4 text-white mb-4`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-white/80">DentAI fidélité</p>
+                      <p className="text-lg font-bold">Niveau {fidelityTier}</p>
+                    </div>
+                    <CreditCard className="w-6 h-6" />
+                  </div>
+                  <p className="text-sm mt-3">Points: {loyalty?.points || 0}</p>
+                  <p className="text-xs text-white/80 mt-1">Temps cumulé: {loyalty?.minutesSpent || 0} min</p>
+                </div>
+
+                <div className="rounded-xl border border-border bg-background p-3 mb-4">
+                  <p className="text-xs text-muted-foreground">Récompenses fidélité disponibles</p>
+                  <div className="mt-2 space-y-2">
+                    {rewards.map(reward => {
+                      const alreadyCollected = loyalty?.collectedRewards?.includes(reward.id);
+                      const canCollect = !alreadyCollected && (loyalty?.points || 0) >= reward.cost;
+
+                      return (
+                        <div key={reward.id} className="rounded-lg border border-border p-2">
+                          <p className="text-sm font-semibold text-foreground">{reward.title}</p>
+                          <p className="text-xs text-muted-foreground">{reward.description}</p>
+                          <div className="mt-2 flex items-center justify-between gap-2">
+                            <span className="text-xs text-primary font-semibold">{reward.cost} pts</span>
+                            <button
+                              type="button"
+                              onClick={() => handleCollectReward(reward.id)}
+                              disabled={!canCollect}
+                              className="text-xs px-2 py-1 rounded-md bg-primary text-primary-foreground disabled:bg-secondary disabled:text-muted-foreground disabled:cursor-not-allowed"
+                            >
+                              {alreadyCollected ? 'Pris' : canCollect ? 'Récupérer' : 'Bloqué'}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Award className="w-4 h-4" />
+                  Gardez cette page ouverte pour gagner des points automatiquement.
+                </div>
+                {loyaltyMessage && (
+                  <p className="mt-3 text-xs font-semibold text-emerald-700 inline-flex items-center gap-1">
+                    <Gift className="w-3 h-3" />
+                    {loyaltyMessage}
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Quick Actions */}
             <div className="bg-card text-card-foreground rounded-xl border border-border/50 p-6">
