@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(npx next:*)",
-      "Bash(grep -E \"\\\\.\\(ts|js|json|mjs\\)$\")"
+      "Bash(grep -E \"\\\\.\\(ts|js|json|mjs\\)$\")",
+      "Bash(npm --version)"
     ]
   }
 }
