@@ -1,0 +1,164 @@
+{
+  "users": [
+    {
+      "id": "u1",
+      "name": "Dr. Rami Benayed",
+      "email": "rami@dentai.com",
+      "role": "Médecin",
+      "avatar": "RB",
+      "dateOfBirth": "1985-03-10",
+      "localisation": "Tunis",
+      "relations": "",
+      "isKid": false
+    },
+    {
+      "id": "u2",
+      "name": "Ahmed Slaimi",
+      "email": "ahmed.slaimi@email.com",
+      "role": "Patient",
+      "avatar": "AS",
+      "dateOfBirth": "2016-05-12",
+      "localisation": "Sousse",
+      "relations": "Dr. Rami Benayed",
+      "isKid": true
+    },
+    {
+      "id": "user_1775684335589_4757",
+      "name": "Ben Najjar Ali",
+      "email": "bennajjar.ali@esprim.tn",
+      "role": "Médecin",
+      "avatar": "BA",
+      "dateOfBirth": "2026-04-16",
+      "localisation": "kairouan",
+      "relations": "ALI BEN SALAH",
+      "isKid": false
+    },
+    {
+      "id": "user_1775685314713_6077",
+      "name": "bentili oumaima",
+      "email": "oumaima.bentili@enim.u-monastir.tn",
+      "role": "Patient",
+      "avatar": "BO",
+      "dateOfBirth": "2023-02-08",
+      "localisation": "tunis",
+      "relations": "ALI BEN SALAH",
+      "isKid": true
+    }
+  ],
+  "doctors": [
+    {
+      "id": "d1",
+      "name": "Dr. Rami Benayed",
+      "city": "Tunis",
+      "specialty": "Pédodontie",
+      "phone": "+216 91 234 567",
+      "email": "rami@dentai.com"
+    },
+    {
+      "id": "d2",
+      "name": "Dr. Salma Jaziri",
+      "city": "Sfax",
+      "specialty": "Orthodontie",
+      "phone": "+216 92 111 222",
+      "email": "salma@dentai.com"
+    },
+    {
+      "id": "d3",
+      "name": "Dr. Yassine Trabelsi",
+      "city": "Sousse",
+      "specialty": "Dentisterie générale",
+      "phone": "+216 93 333 444",
+      "email": "yassine@dentai.com"
+    }
+  ],
+  "patients": [
+    {
+      "id": "p1",
+      "name": "Ahmed Slaimi",
+      "age": 9,
+      "gender": "M",
+      "cin": "12345678",
+      "reference": "REF001",
+      "riskScore": 45,
+      "riskLevel": "Modéré",
+      "lastVisit": "2026-04-01",
+      "dateOfBirth": "2016-05-12",
+      "phone": "+216 91 234 567",
+      "medicalHistory": "Aucune",
+      "doctor": "Dr. Rami Benayed",
+      "insurance": "CNAM",
+      "patientEmail": "ahmed.slaimi@email.com"
+    },
+    {
+      "id": "p2",
+      "name": "Leila Tabbabi",
+      "age": 28,
+      "gender": "F",
+      "cin": "87654321",
+      "reference": "REF002",
+      "riskScore": 45,
+      "riskLevel": "Modéré",
+      "lastVisit": "2026-03-10",
+      "dateOfBirth": "1998-08-22",
+      "phone": "+216 92 345 678",
+      "medicalHistory": "Aucune",
+      "doctor": "Dr. Rami Benayed",
+      "insurance": "CNAM",
+      "patientEmail": "leila@email.com"
+    },
+    {
+      "id": "patient_1775685314714_9156",
+      "name": "bentili oumaima",
+      "age": 3,
+      "gender": "M",
+      "cin": "00000000",
+      "reference": "REF116",
+      "riskScore": 52,
+      "riskLevel": "Modéré",
+      "lastVisit": "2026-04-08",
+      "dateOfBirth": "2023-02-08",
+      "phone": "",
+      "medicalHistory": "Aucune",
+      "doctor": "Dr. Rami Benayed",
+      "insurance": "CNAM",
+      "patientEmail": "oumaima.bentili@enim.u-monastir.tn"
+    }
+  ],
+  "appointments": [
+    {
+      "id": "apt1",
+      "date": "2026-04-12",
+      "time": "09:30",
+      "doctor": "Dr. Rami Benayed",
+      "type": "Contrôle routine",
+      "status": "confirmé",
+      "doctorId": "d1",
+      "patientEmail": "ahmed.slaimi@email.com",
+      "location": "Sousse"
+    }
+  ],
+  "chats": [
+    {
+      "id": "c1",
+      "doctorId": "d1",
+      "patientEmail": "ahmed.slaimi@email.com",
+      "from": "doctor",
+      "text": "Bonjour, je suis votre dentiste. Posez-moi vos questions.",
+      "timestamp": "2026-04-08T18:00:00.000Z"
+    }
+  ],
+  "activityFeed": [
+    {
+      "id": "a1",
+      "type": "analysis",
+      "description": "Analyse IA complétée pour Ahmed Slaimi",
+      "timestamp": "2026-04-08 14:30"
+    },
+    {
+      "id": "a2",
+      "type": "upload",
+      "description": "Radiographie importée pour Leila Tabbabi",
+      "timestamp": "2026-04-08 13:45"
+    }
+  ]
+}

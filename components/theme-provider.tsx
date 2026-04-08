@@ -1,11 +1,66 @@
-'use client'
+'use client';
 
-import * as React from 'react'
 import {
-  ThemeProvider as NextThemesProvider,
-  type ThemeProviderProps,
-} from 'next-themes'
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 
-export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
-  return <NextThemesProvider {...props}>{children}</NextThemesProvider>
+type Theme = 'light' | 'dark';
+
+type ThemeContextValue = {
+  theme: Theme;
+  resolvedTheme: Theme;
+  setTheme: (theme: Theme) => void;
+};
+
+const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
+
+type ThemeProviderProps = {
+  children: ReactNode;
+  defaultTheme?: Theme;
+  attribute?: string;
+  enableSystem?: boolean;
+};
+
+function applyTheme(theme: Theme) {
+  const root = document.documentElement;
+  root.classList.remove('light', 'dark');
+  root.classList.add(theme);
+}
+
+export function ThemeProvider({ children, defaultTheme = 'light' }: ThemeProviderProps) {
+  const [theme, setThemeState] = useState<Theme>(defaultTheme);
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem('theme');
+    const initialTheme: Theme = saved === 'dark' || saved === 'light' ? saved : defaultTheme;
+
+    setThemeState(initialTheme);
+    applyTheme(initialTheme);
+  }, [defaultTheme]);
+
+  const setTheme = (nextTheme: Theme) => {
+    setThemeState(nextTheme);
+    window.localStorage.setItem('theme', nextTheme);
+    applyTheme(nextTheme);
+  };
+
+  const value = useMemo(
+    () => ({ theme, resolvedTheme: theme, setTheme }),
+    [theme]
+  );
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+}
+
+export function useTheme() {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useTheme must be used within ThemeProvider');
+  }
+  return context;
 }

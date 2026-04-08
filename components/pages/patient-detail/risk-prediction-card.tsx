@@ -8,9 +8,9 @@ interface RiskPredictionCardProps {
 }
 
 const colorMap = {
-  high: 'bg-red-100 text-red-700',
-  medium: 'bg-amber-100 text-amber-700',
-  low: 'bg-green-100 text-green-700',
+  high: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+  medium: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+  low: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
 };
 
 const barColorMap = {
@@ -21,7 +21,7 @@ const barColorMap = {
 
 export function RiskPredictionCard({ predictions }: RiskPredictionCardProps) {
   return (
-    <div className="bg-white rounded-lg border border-border p-6">
+    <div className="bg-card text-card-foreground rounded-lg border border-border p-6">
       <h3 className="font-semibold text-foreground mb-6">Prédictions de risque</h3>
 
       <div className="space-y-4 mb-6">
@@ -33,7 +33,7 @@ export function RiskPredictionCard({ predictions }: RiskPredictionCardProps) {
                 {pred.percentage}%
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-secondary rounded-full h-2">
               <div
                 className={`h-2 rounded-full transition-all ${barColorMap[pred.color]}`}
                 style={{ width: `${pred.percentage}%` }}
@@ -44,7 +44,7 @@ export function RiskPredictionCard({ predictions }: RiskPredictionCardProps) {
       </div>
 
       <div className="flex gap-3">
-        <button className="flex-1 flex items-center justify-center gap-2 bg-primary text-white font-medium py-2.5 rounded-lg hover:bg-primary/90 transition-colors text-sm">
+        <button className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground font-medium py-2.5 rounded-lg hover:bg-primary/90 transition-colors text-sm">
           <Download className="w-4 h-4" />
           Exporter rapport
         </button>

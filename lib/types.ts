@@ -1,6 +1,12 @@
-export type UserRole = 'Médecin' | 'Radiologue' | 'Admin' | 'Patient';
+export type UserRole = 'Médecin' | 'Patient';
 export type RiskLevel = 'Élevé' | 'Modéré' | 'Faible';
-export type AppPage = 'landing' | 'login' | 'home' | 'patient-detail' | 'patient-dashboard';
+export type AppPage =
+  | 'landing'
+  | 'login'
+  | 'home'
+  | 'patient-detail'
+  | 'patient-dashboard'
+  | 'kids-zone';
 
 export interface User {
   id: string;
@@ -8,6 +14,10 @@ export interface User {
   email: string;
   role: UserRole;
   avatar?: string;
+  dateOfBirth?: string;
+  localisation?: string;
+  relations?: string;
+  isKid?: boolean;
 }
 
 export interface Patient {
@@ -25,6 +35,7 @@ export interface Patient {
   medicalHistory?: string;
   doctor?: string;
   insurance?: string;
+  patientEmail?: string;
 }
 
 export interface CariesDetection {

@@ -17,9 +17,9 @@ export function PatientsTable({ patients }: PatientsTableProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg border border-border overflow-hidden">
+    <div className="bg-card text-card-foreground rounded-lg border border-border overflow-hidden">
       <table className="w-full">
-        <thead className="bg-secondary border-b border-border">
+        <thead className="bg-secondary/80 border-b border-border">
           <tr>
             <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Patient</th>
             <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Âge</th>
@@ -32,7 +32,7 @@ export function PatientsTable({ patients }: PatientsTableProps) {
             <tr
               key={patient.id}
               onClick={() => handleRowClick(patient)}
-              className="hover:bg-secondary/50 transition-colors cursor-pointer"
+              className="hover:bg-secondary/70 transition-colors cursor-pointer"
             >
               <td className="px-6 py-4">
                 <div className="flex items-center gap-3">

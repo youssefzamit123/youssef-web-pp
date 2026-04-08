@@ -14,14 +14,14 @@ const iconMap = {
 };
 
 const colorMap = {
-  analysis: 'text-green-600 bg-green-50',
-  upload: 'text-blue-600 bg-blue-50',
-  update: 'text-amber-600 bg-amber-50',
+  analysis: 'text-green-700 bg-green-100 dark:text-green-300 dark:bg-green-900/30',
+  upload: 'text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-900/30',
+  update: 'text-amber-700 bg-amber-100 dark:text-amber-300 dark:bg-amber-900/30',
 };
 
 export function ActivityFeed({ items }: ActivityFeedProps) {
   return (
-    <div className="bg-white rounded-lg border border-border p-6">
+    <div className="bg-card text-card-foreground rounded-lg border border-border p-6">
       <h3 className="font-semibold text-foreground mb-4">Activité récente</h3>
       <div className="space-y-3">
         {items.map(item => (

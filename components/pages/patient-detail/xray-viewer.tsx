@@ -62,7 +62,7 @@ export function XrayViewer({ detections }: XrayViewerProps) {
           {detections.map(detection => (
             <div
               key={detection.toothNumber}
-              className="flex items-center justify-between bg-white rounded-lg p-3 border border-border"
+              className="flex items-center justify-between bg-card text-card-foreground rounded-lg p-3 border border-border"
             >
               <div>
                 <p className="font-medium text-foreground">Dent {detection.toothNumber}</p>

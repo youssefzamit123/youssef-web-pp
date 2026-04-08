@@ -24,7 +24,7 @@ export function PatientDetailPage() {
           </p>
           <button
             onClick={() => setCurrentPage('home')}
-            className="px-6 py-2.5 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 transition-all text-sm"
+            className="px-6 py-2.5 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-all text-sm"
           >
             Retour au tableau de bord
           </button>
@@ -39,7 +39,7 @@ export function PatientDetailPage() {
         <BackButton />
 
         {/* Patient Profile Banner */}
-        <div className="bg-white rounded-xl border border-border/50 p-8 mb-8 shadow-sm">
+        <div className="bg-card text-card-foreground rounded-xl border border-border/50 p-8 mb-8 shadow-sm">
           <div className="flex items-start gap-6">
             <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
               <span className="text-2xl font-bold text-primary">

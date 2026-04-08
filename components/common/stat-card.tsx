@@ -11,7 +11,7 @@ interface StatCardProps {
 export function StatCard({ label, value, icon, badge, highlight = false }: StatCardProps) {
   return (
     <div
-      className={`bg-white rounded-lg border transition-all p-6 ${
+      className={`bg-card text-card-foreground rounded-lg border transition-all p-6 ${
         highlight ? 'border-primary shadow-md' : 'border-border hover:shadow-sm'
       }`}
     >

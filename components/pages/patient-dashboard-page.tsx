@@ -1,7 +1,7 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
 import { useAppContext } from '@/lib/context';
-import { mockPatients, mockAppointments, mockRiskPredictions } from '@/lib/mock-data';
 import {
   Calendar,
   FileText,
@@ -12,11 +12,12 @@ import {
   TrendingUp,
   Phone,
 } from 'lucide-react';
+import type { Appointment, Patient, RiskPrediction } from '@/lib/types';
 
 const statusColors = {
-  'confirmé': 'bg-green-50 text-green-700 border-green-200',
-  'en attente': 'bg-amber-50 text-amber-700 border-amber-200',
-  'annulé': 'bg-red-50 text-red-700 border-red-200',
+  'confirmé': 'bg-green-500/10 text-green-700 dark:text-green-300 border-green-500/30',
+  'en attente': 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30',
+  'annulé': 'bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/30',
 };
 
 const statusIcons = {
@@ -27,22 +28,74 @@ const statusIcons = {
 
 export function PatientDashboardPage() {
   const { user } = useAppContext();
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
 
-  const patient = mockPatients.find(p => p.name === user?.name) || mockPatients[0];
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [bootstrapRes, appointmentsRes] = await Promise.all([
+          fetch('/api/data/bootstrap'),
+          fetch(`/api/appointments?patientEmail=${encodeURIComponent(user?.email || '')}`),
+        ]);
+
+        const bootstrapData = await bootstrapRes.json();
+        const appointmentsData = await appointmentsRes.json();
+
+        setPatients(bootstrapData?.patients || []);
+        setAppointments(appointmentsData?.appointments || []);
+      } catch {
+        setPatients([]);
+        setAppointments([]);
+      }
+    };
+
+    loadData();
+  }, [user?.email]);
+
+  const patient =
+    patients.find(p => p.patientEmail?.toLowerCase() === user?.email?.toLowerCase()) ||
+    patients.find(p => p.name === user?.name) ||
+    patients[0];
+
+  const riskPredictions: RiskPrediction[] = useMemo(
+    () => [
+      { metric: 'Carie avancée', percentage: patient?.riskScore || 0, color: 'high' },
+      {
+        metric: 'Risque parodontal',
+        percentage: Math.max(10, Math.min(95, Math.round((patient?.riskScore || 30) * 0.7))),
+        color: 'medium',
+      },
+      {
+        metric: 'Hypersensibilité',
+        percentage: Math.max(5, Math.min(90, Math.round((patient?.riskScore || 20) * 0.45))),
+        color: 'low',
+      },
+    ],
+    [patient?.riskScore]
+  );
+
+  if (!patient) {
+    return (
+      <div className="min-h-screen bg-secondary/50 p-8">
+        <p className="text-muted-foreground">Aucun dossier patient trouvé.</p>
+      </div>
+    );
+  }
 
   const riskColor =
     patient.riskLevel === 'Élevé'
-      ? 'text-red-600'
+      ? 'text-red-700 dark:text-red-300'
       : patient.riskLevel === 'Modéré'
-        ? 'text-amber-600'
-        : 'text-green-600';
+        ? 'text-amber-700 dark:text-amber-300'
+        : 'text-green-700 dark:text-green-300';
 
   const riskBg =
     patient.riskLevel === 'Élevé'
-      ? 'bg-red-50 border-red-200'
+      ? 'bg-red-500/10 border-red-500/30'
       : patient.riskLevel === 'Modéré'
-        ? 'bg-amber-50 border-amber-200'
-        : 'bg-green-50 border-green-200';
+        ? 'bg-amber-500/10 border-amber-500/30'
+        : 'bg-green-500/10 border-green-500/30';
 
   return (
     <div className="min-h-screen bg-secondary/50">
@@ -62,7 +115,7 @@ export function PatientDashboardPage() {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-xl border border-border/50 p-5 hover:shadow-md transition-shadow">
+          <div className="bg-card text-card-foreground rounded-xl border border-border/50 p-5 hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
                 <Heart className="w-5 h-5 text-primary" />
@@ -71,16 +124,16 @@ export function PatientDashboardPage() {
             <p className="text-xs text-muted-foreground mb-1">Score de risque</p>
             <p className={`text-2xl font-bold ${riskColor}`}>{patient.riskScore}/100</p>
           </div>
-          <div className="bg-white rounded-xl border border-border/50 p-5 hover:shadow-md transition-shadow">
+          <div className="bg-card text-card-foreground rounded-xl border border-border/50 p-5 hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
                 <Calendar className="w-5 h-5 text-accent" />
               </div>
             </div>
             <p className="text-xs text-muted-foreground mb-1">Prochain RDV</p>
-            <p className="text-lg font-bold text-foreground">{mockAppointments[0].date}</p>
+            <p className="text-lg font-bold text-foreground">{appointments[0]?.date || '-'}</p>
           </div>
-          <div className="bg-white rounded-xl border border-border/50 p-5 hover:shadow-md transition-shadow">
+          <div className="bg-card text-card-foreground rounded-xl border border-border/50 p-5 hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 bg-amber-500/10 rounded-lg flex items-center justify-center">
                 <FileText className="w-5 h-5 text-amber-600" />
@@ -89,7 +142,7 @@ export function PatientDashboardPage() {
             <p className="text-xs text-muted-foreground mb-1">Dernière visite</p>
             <p className="text-lg font-bold text-foreground">{patient.lastVisit}</p>
           </div>
-          <div className="bg-white rounded-xl border border-border/50 p-5 hover:shadow-md transition-shadow">
+          <div className="bg-card text-card-foreground rounded-xl border border-border/50 p-5 hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-purple-600" />
@@ -104,10 +157,10 @@ export function PatientDashboardPage() {
           {/* Left: Appointments + Info */}
           <div className="lg:col-span-2 space-y-6">
             {/* Appointments */}
-            <div className="bg-white rounded-xl border border-border/50 p-6">
+            <div className="bg-card text-card-foreground rounded-xl border border-border/50 p-6">
               <h2 className="text-lg font-bold text-foreground mb-5">Mes rendez-vous</h2>
               <div className="space-y-3">
-                {mockAppointments.map(apt => (
+                {appointments.map(apt => (
                   <div
                     key={apt.id}
                     className="flex items-center gap-4 p-4 rounded-xl border border-border/50 hover:bg-secondary/30 transition-colors"
@@ -138,7 +191,7 @@ export function PatientDashboardPage() {
             </div>
 
             {/* Risk Analysis */}
-            <div className="bg-white rounded-xl border border-border/50 p-6">
+            <div className="bg-card text-card-foreground rounded-xl border border-border/50 p-6">
               <h2 className="text-lg font-bold text-foreground mb-5">
                 Mon analyse de risque
               </h2>
@@ -156,7 +209,7 @@ export function PatientDashboardPage() {
                 </div>
               </div>
               <div className="space-y-4">
-                {mockRiskPredictions.map((pred, idx) => {
+                {riskPredictions.map((pred, idx) => {
                   const barColor =
                     pred.color === 'high'
                       ? 'bg-red-500'
@@ -165,10 +218,10 @@ export function PatientDashboardPage() {
                         : 'bg-green-500';
                   const labelColor =
                     pred.color === 'high'
-                      ? 'text-red-700 bg-red-50'
+                      ? 'text-red-700 dark:text-red-300 bg-red-500/10'
                       : pred.color === 'medium'
-                        ? 'text-amber-700 bg-amber-50'
-                        : 'text-green-700 bg-green-50';
+                        ? 'text-amber-700 dark:text-amber-300 bg-amber-500/10'
+                        : 'text-green-700 dark:text-green-300 bg-green-500/10';
                   return (
                     <div key={idx}>
                       <div className="flex items-center justify-between mb-2">
@@ -195,7 +248,7 @@ export function PatientDashboardPage() {
           {/* Right: Personal Info + Doctor */}
           <div className="space-y-6">
             {/* Personal Info */}
-            <div className="bg-white rounded-xl border border-border/50 p-6">
+            <div className="bg-card text-card-foreground rounded-xl border border-border/50 p-6">
               <h2 className="text-lg font-bold text-foreground mb-5">Mes informations</h2>
               <div className="space-y-4">
                 {[
@@ -220,14 +273,20 @@ export function PatientDashboardPage() {
             </div>
 
             {/* My Doctor */}
-            <div className="bg-white rounded-xl border border-border/50 p-6">
-              <h2 className="text-lg font-bold text-foreground mb-5">Mon médecin</h2>
+            <div className="bg-card text-card-foreground rounded-xl border border-border/50 p-6">
+              <h2 className="text-lg font-bold text-foreground mb-5">Mon dentiste</h2>
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center">
-                  <span className="text-base font-bold text-primary">RB</span>
+                  <span className="text-base font-bold text-primary">
+                    {(patient.doctor || 'NA')
+                      .split(' ')
+                      .slice(0, 2)
+                      .map(part => part[0])
+                      .join('')}
+                  </span>
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground">Dr. Rami Benayed</p>
+                  <p className="font-semibold text-foreground">{patient.doctor || 'Non assigné'}</p>
                   <p className="text-xs text-muted-foreground">Chirurgien-dentiste</p>
                 </div>
               </div>
@@ -238,7 +297,7 @@ export function PatientDashboardPage() {
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-white rounded-xl border border-border/50 p-6">
+            <div className="bg-card text-card-foreground rounded-xl border border-border/50 p-6">
               <h2 className="text-lg font-bold text-foreground mb-5">Actions rapides</h2>
               <div className="space-y-3">
                 <button className="w-full flex items-center gap-3 p-3 rounded-xl border border-border/50 hover:bg-secondary/50 transition-colors text-left">

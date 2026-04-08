@@ -1,16 +1,35 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useAppContext } from '@/lib/context';
-import { mockPatients, mockActivityFeed } from '@/lib/mock-data';
 import { StatCard } from '@/components/common/stat-card';
 import { RiskBadge } from '@/components/common/risk-badge';
 import { PatientsTable } from './home/patients-table';
 import { UploadZone } from './home/upload-zone';
 import { ActivityFeed } from './home/activity-feed';
 import { Users, Zap, AlertCircle, Target } from 'lucide-react';
+import type { ActivityFeedItem, Patient } from '@/lib/types';
 
 export function HomePage() {
   const { user } = useAppContext();
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [activityFeed, setActivityFeed] = useState<ActivityFeedItem[]>([]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const response = await fetch('/api/data/bootstrap');
+        const data = await response.json();
+        setPatients(data?.patients || []);
+        setActivityFeed(data?.activityFeed || []);
+      } catch {
+        setPatients([]);
+        setActivityFeed([]);
+      }
+    };
+
+    loadData();
+  }, []);
 
   const today = new Date();
   const dateStr = today.toLocaleDateString('fr-FR', {
@@ -20,9 +39,9 @@ export function HomePage() {
     day: 'numeric',
   });
 
-  const highRiskCount = mockPatients.filter(p => p.riskLevel === 'Élevé').length;
-  const totalPatients = mockPatients.length;
-  const analysisCount = mockPatients.length * 3;
+  const highRiskCount = patients.filter(p => p.riskLevel === 'Élevé').length;
+  const totalPatients = patients.length;
+  const analysisCount = patients.length * 3;
   const aiAccuracy = 94;
 
   return (
@@ -68,16 +87,17 @@ export function HomePage() {
           <div className="lg:col-span-2 space-y-6">
             <div>
               <h2 className="text-lg font-semibold text-foreground mb-4">Patients récents</h2>
-              <PatientsTable patients={mockPatients} />
+              <PatientsTable patients={patients} />
             </div>
           </div>
 
           {/* Right Column */}
           <div className="space-y-6">
             <UploadZone />
-            <ActivityFeed items={mockActivityFeed} />
+            <ActivityFeed items={activityFeed} />
           </div>
         </div>
+
       </div>
     </div>
   );

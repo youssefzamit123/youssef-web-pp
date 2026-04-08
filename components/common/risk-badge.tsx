@@ -7,18 +7,18 @@ interface RiskBadgeProps {
 
 const riskColors: Record<RiskLevel, { bg: string; text: string; dot: string }> = {
   'Élevé': {
-    bg: 'bg-red-50',
-    text: 'text-red-700',
+    bg: 'bg-red-100 dark:bg-red-900/30',
+    text: 'text-red-700 dark:text-red-300',
     dot: 'bg-red-500',
   },
   'Modéré': {
-    bg: 'bg-amber-50',
-    text: 'text-amber-700',
+    bg: 'bg-amber-100 dark:bg-amber-900/30',
+    text: 'text-amber-700 dark:text-amber-300',
     dot: 'bg-amber-500',
   },
   'Faible': {
-    bg: 'bg-green-50',
-    text: 'text-green-700',
+    bg: 'bg-green-100 dark:bg-green-900/30',
+    text: 'text-green-700 dark:text-green-300',
     dot: 'bg-green-500',
   },
 };

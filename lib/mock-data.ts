@@ -9,20 +9,6 @@ export const mockUsers: User[] = [
     avatar: 'RB',
   },
   {
-    id: '2',
-    name: 'Dr. Fatima Zahra',
-    email: 'fatima@dentai.com',
-    role: 'Radiologue',
-    avatar: 'FZ',
-  },
-  {
-    id: '3',
-    name: 'Admin System',
-    email: 'admin@dentai.com',
-    role: 'Admin',
-    avatar: 'AS',
-  },
-  {
     id: '4',
     name: 'Ahmed Slaimi',
     email: 'ahmed.slaimi@email.com',

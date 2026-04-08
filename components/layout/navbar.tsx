@@ -1,11 +1,13 @@
 'use client';
 
 import { useAppContext } from '@/lib/context';
-import { LogOut, Home, User, LayoutDashboard } from 'lucide-react';
+import { useTheme } from '@/components/theme-provider';
+import { LogOut, Home, User, LayoutDashboard, Moon, Sun } from 'lucide-react';
 
 export function Navbar() {
   const { currentPage, user, selectedPatient, setCurrentPage, setUser, setSelectedPatient } =
     useAppContext();
+  const { resolvedTheme, setTheme } = useTheme();
 
   if (currentPage === 'login' || currentPage === 'landing') return null;
 
@@ -19,7 +21,9 @@ export function Navbar() {
 
   const handleHome = () => {
     setSelectedPatient(null);
-    if (isPatient) {
+    if (user?.isKid) {
+      setCurrentPage('kids-zone');
+    } else if (isPatient) {
       setCurrentPage('patient-dashboard');
     } else {
       setCurrentPage('home');
@@ -27,7 +31,7 @@ export function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-border/50 px-6 py-3">
+    <nav className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-6 py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-8">
           {/* Logo */}
@@ -76,13 +80,13 @@ export function Navbar() {
               <button
                 onClick={handleHome}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  currentPage === 'patient-dashboard'
+                  currentPage === 'patient-dashboard' || currentPage === 'kids-zone'
                     ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                 }`}
               >
                 <LayoutDashboard className="w-4 h-4" />
-                Mon espace
+                {user?.isKid ? 'Mon univers' : 'Mon espace'}
               </button>
             </div>
           )}
@@ -90,9 +94,16 @@ export function Navbar() {
 
         {/* Right side: user info + logout */}
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+            className="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+            title="Basculer thème"
+          >
+            {resolvedTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
           <div className="hidden sm:block text-right mr-1">
             <p className="text-sm font-semibold text-foreground leading-tight">{user?.name}</p>
-            <p className="text-xs text-muted-foreground">{user?.role}</p>
+            <p className="text-xs text-muted-foreground">{user?.role === 'Médecin' ? 'Dentiste' : user?.role}</p>
           </div>
           <div className="w-9 h-9 rounded-full bg-primary/15 flex items-center justify-center">
             <span className="text-xs font-bold text-primary">{user?.avatar || 'U'}</span>

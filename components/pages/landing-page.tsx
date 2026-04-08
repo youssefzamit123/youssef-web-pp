@@ -12,15 +12,19 @@ import {
   Brain,
   ScanLine,
   HeartPulse,
+  Moon,
+  Sun,
 } from 'lucide-react';
+import { useTheme } from '@/components/theme-provider';
 
 export function LandingPage() {
   const { setCurrentPage } = useAppContext();
+  const { resolvedTheme, setTheme } = useTheme();
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-border/50">
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg shadow-primary/25">
@@ -43,12 +47,27 @@ export function LandingPage() {
             </a>
           </nav>
 
-          <button
-            onClick={() => setCurrentPage('login')}
-            className="px-6 py-2.5 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-all hover:shadow-lg hover:shadow-primary/25 text-sm"
-          >
-            Connexion
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+              className="w-10 h-10 rounded-lg border border-border bg-card/80 text-muted-foreground hover:text-foreground hover:bg-secondary transition-all flex items-center justify-center"
+              title="Basculer thème"
+            >
+              {resolvedTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+            <button
+              onClick={() => setCurrentPage('login')}
+              className="px-6 py-2.5 border border-border bg-card text-foreground font-semibold rounded-lg hover:bg-secondary transition-all text-sm"
+            >
+              Créer un compte
+            </button>
+            <button
+              onClick={() => setCurrentPage('login')}
+              className="px-6 py-2.5 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-all hover:shadow-lg hover:shadow-primary/25 text-sm"
+            >
+              Connexion
+            </button>
+          </div>
         </div>
       </header>
 
@@ -216,7 +235,7 @@ export function LandingPage() {
                 icon: <Users className="w-7 h-7" />,
                 title: 'Multi-utilisateurs',
                 description:
-                  'Accès différencié pour médecins, radiologues et patients avec tableaux de bord personnalisés.',
+                  'Accès différencié pour dentistes, radiologues et patients avec tableaux de bord personnalisés.',
                 color: 'bg-purple-500/10 text-purple-600',
               },
               {
@@ -229,7 +248,7 @@ export function LandingPage() {
             ].map((feature, idx) => (
               <div
                 key={idx}
-                className="group bg-white rounded-2xl p-8 border border-border/50 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300"
+                className="group bg-card text-card-foreground rounded-2xl p-8 border border-border/50 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300"
               >
                 <div
                   className={`w-14 h-14 rounded-xl ${feature.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}
@@ -328,14 +347,14 @@ export function LandingPage() {
             ].map((testimonial, idx) => (
               <div
                 key={idx}
-                className="bg-white rounded-2xl p-8 border border-border/50 shadow-sm"
+                className="bg-card text-card-foreground rounded-2xl p-8 border border-border/50 shadow-sm"
               >
                 <div className="flex gap-1 mb-6">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star key={i} className="w-5 h-5 text-amber-400 fill-amber-400" />
                   ))}
                 </div>
-                <p className="text-foreground mb-6 leading-relaxed text-sm">
+                <p className="text-card-foreground mb-6 leading-relaxed text-sm">
                   &ldquo;{testimonial.text}&rdquo;
                 </p>
                 <div className="flex items-center gap-3">
@@ -345,7 +364,7 @@ export function LandingPage() {
                     </span>
                   </div>
                   <div>
-                    <p className="font-semibold text-foreground text-sm">{testimonial.name}</p>
+                    <p className="font-semibold text-card-foreground text-sm">{testimonial.name}</p>
                     <p className="text-xs text-muted-foreground">{testimonial.role}</p>
                   </div>
                 </div>
@@ -358,7 +377,7 @@ export function LandingPage() {
       {/* CTA Section */}
       <section className="py-24">
         <div className="max-w-4xl mx-auto px-6 text-center">
-          <div className="bg-gradient-to-br from-primary to-primary/80 rounded-3xl p-12 lg:p-16 shadow-2xl shadow-primary/20">
+          <div className="bg-gradient-to-br from-[#0A6EBD] to-[#09589a] dark:from-[#1e40af] dark:to-[#0f172a] rounded-3xl p-12 lg:p-16 shadow-2xl shadow-slate-900/30">
             <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4 font-display">
               Prêt à révolutionner votre diagnostic ?
             </h2>
@@ -368,7 +387,7 @@ export function LandingPage() {
             </p>
             <button
               onClick={() => setCurrentPage('login')}
-              className="group px-10 py-4 bg-white text-primary font-bold rounded-xl hover:bg-white/90 transition-all text-base inline-flex items-center gap-3 shadow-lg"
+              className="group px-10 py-4 bg-white text-[#0A6EBD] font-bold rounded-xl hover:bg-white/90 transition-all text-base inline-flex items-center gap-3 shadow-lg"
             >
               Créer un compte gratuitement
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
