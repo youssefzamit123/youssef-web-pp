@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useAppContext } from '@/lib/context';
 import type { UserRole } from '@/lib/types';
 import { ArrowLeft, BriefcaseMedical, UserRound, Mail } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
 
 const roles: { role: UserRole; label: string; icon: React.ReactNode; description: string }[] = [
   {
@@ -41,13 +43,15 @@ function getAgeFromBirthDate(dateNaissance: string) {
 }
 
 export function LoginPage() {
-  const { setUser, setCurrentPage } = useAppContext();
+  const router = useRouter();
+  const { setUser } = useAppContext();
   const [mode, setMode] = useState<AuthMode>('login');
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [nom, setNom] = useState('');
   const [prenom, setPrenom] = useState('');
+  const [telephone, setTelephone] = useState('');
   const [dateNaissance, setDateNaissance] = useState('');
   const [localisation, setLocalisation] = useState('');
   const [relations, setRelations] = useState('');
@@ -56,11 +60,14 @@ export function LoginPage() {
   const [pendingVerification, setPendingVerification] = useState(false);
   const [message, setMessage] = useState('');
 
+  const isSubmitDisabled =
+    mode === 'signup' ? !selectedRole : !email.trim() || !password.trim();
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage('');
-    if (!email || !selectedRole) {
-      setMessage('Veuillez fournir email et rôle.');
+    if (!email || !password) {
+      setMessage('Veuillez fournir un email et un mot de passe.');
       return;
     }
 
@@ -72,7 +79,7 @@ export function LoginPage() {
         },
         body: JSON.stringify({
           email,
-          role: selectedRole,
+          password
         }),
       });
 
@@ -85,12 +92,14 @@ export function LoginPage() {
       const user = data.user;
       setUser(user);
 
-      if (selectedRole === 'Patient' && user.isKid) {
-        setCurrentPage('kids-zone');
-      } else if (selectedRole === 'Patient') {
-        setCurrentPage('patient-dashboard');
+      if (user.role === 'Admin') {
+        router.push('/admin-dashboard');
+      } else if (user.role === 'Patient' && user.isKid) {
+        router.push('/kids-zone');
+      } else if (user.role === 'Patient') {
+        router.push('/patient-dashboard');
       } else {
-        setCurrentPage('home');
+        router.push('/home');
       }
     } catch {
       setMessage('Impossible de se connecter au serveur.');
@@ -168,9 +177,11 @@ export function LoginPage() {
         },
         body: JSON.stringify({
           email,
+          password,
           role: selectedRole,
           prenom,
           nom,
+          telephone,
           dateNaissance,
           localisation,
           relations,
@@ -186,11 +197,11 @@ export function LoginPage() {
       setUser(registerData.user);
 
       if (selectedRole === 'Patient' && registerData.user?.isKid) {
-        setCurrentPage('kids-zone');
+        router.push('/kids-zone');
       } else if (selectedRole === 'Patient') {
-        setCurrentPage('patient-dashboard');
+        router.push('/patient-dashboard');
       } else {
-        setCurrentPage('home');
+        router.push('/home');
       }
     } catch {
       setMessage('Erreur de vérification. Réessayez.');
@@ -236,7 +247,7 @@ export function LoginPage() {
       <div className="relative w-full max-w-md">
         {/* Back to landing */}
         <button
-          onClick={() => setCurrentPage('landing')}
+          onClick={() => router.push('/')}
           className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -287,6 +298,7 @@ export function LoginPage() {
 
           <form onSubmit={mode === 'login' ? handleLogin : handleSignup} className="space-y-5">
             {/* Role selection */}
+            {mode === 'signup' && (
             <div>
               <label className="block text-sm font-semibold text-foreground mb-3">
                 Je suis...
@@ -322,6 +334,7 @@ export function LoginPage() {
                 ))}
               </div>
             </div>
+            )}
 
             {mode === 'signup' && (
               <>
@@ -354,6 +367,20 @@ export function LoginPage() {
                       required
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label htmlFor="telephone" className="block text-sm font-semibold text-foreground mb-2">
+                    Numéro de téléphone
+                  </label>
+                  <input
+                    id="telephone"
+                    type="tel"
+                    value={telephone}
+                    onChange={e => setTelephone(e.target.value)}
+                    placeholder="+216 XX XXX XXX"
+                    className="w-full px-4 py-3 rounded-xl border border-border bg-secondary/30 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all"
+                  />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -446,13 +473,24 @@ export function LoginPage() {
                 placeholder="••••••••"
                 className="w-full px-4 py-3 rounded-xl border border-border bg-secondary/30 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all"
               />
+              {mode === 'login' && (
+                <div className="flex justify-end mt-2">
+                  <button
+                    type="button"
+                    onClick={() => alert("Fonctionnalité 'Mot de passe oublié' à venir.")}
+                    className="text-sm font-medium text-primary hover:underline"
+                  >
+                    Mot de passe oublié ?
+                  </button>
+                </div>
+              )}
             </div>
 
             <button
               type="submit"
-              disabled={!selectedRole}
+              disabled={isSubmitDisabled}
               className={`w-full font-bold py-3 rounded-xl transition-all text-base ${
-                selectedRole
+                !isSubmitDisabled
                   ? 'bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/25'
                   : 'bg-muted text-muted-foreground cursor-not-allowed'
               }`}

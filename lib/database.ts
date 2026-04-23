@@ -1,6 +1,6 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import type { ActivityFeedItem, Appointment, Patient, User, UserRole } from './types';
+import type { ActivityFeedItem, Appointment, Patient, User, UserRole, DoctorAccountRequest } from './types';
 
 type DoctorRecord = {
   id: string;
@@ -30,6 +30,42 @@ type PatientRecord = Patient & {
   patientEmail: string;
 };
 
+type GameRecord = {
+  id: string;
+  type: string;
+  title: string;
+  description: string;
+  difficulty?: string;
+  targetColor?: number;
+  memoryTarget?: number;
+  quizQuestions?: Array<{question: string, options: string[], correct: number}>;
+  rewards: {stars: number, points: number};
+};
+
+type RewardConfig = {
+  id: string;
+  title: string;
+  cost: number;
+  description: string;
+  targetRole: 'kid' | 'adult';
+};
+
+type ToothStatus = 'healthy' | 'caries' | 'treated' | 'missing' | 'implant' | 'to-extract';
+
+type ToothData = {
+  number: number;
+  status: ToothStatus;
+  notes: string;
+  aiConfidence?: number;
+};
+
+type DentalRecord = {
+  id: string;
+  patientEmail: string;
+  lastUpdate: string;
+  teeth: ToothData[];
+};
+
 type LoyaltyRecord = {
   patientEmail: string;
   role: 'kid' | 'adult';
@@ -47,6 +83,10 @@ type DatabaseData = {
   chats: ChatRecord[];
   activityFeed: ActivityFeedItem[];
   loyalty: LoyaltyRecord[];
+  games: GameRecord[];
+  rewardConfigs: RewardConfig[];
+  dentalRecords: DentalRecord[];
+  doctorRequests: DoctorAccountRequest[];
 };
 
 const DB_PATH = path.join(process.cwd(), 'data', 'database.json');
@@ -64,6 +104,10 @@ async function ensureDatabaseFile() {
       chats: [],
       activityFeed: [],
       loyalty: [],
+      games: [],
+      rewardConfigs: [],
+      dentalRecords: [],
+      doctorRequests: [],
     };
     await fs.writeFile(DB_PATH, JSON.stringify(initialData, null, 2), 'utf8');
   }
@@ -82,6 +126,10 @@ export async function readDatabase(): Promise<DatabaseData> {
     chats: parsed.chats || [],
     activityFeed: parsed.activityFeed || [],
     loyalty: parsed.loyalty || [],
+    games: parsed.games || [],
+    rewardConfigs: parsed.rewardConfigs || [],
+    dentalRecords: parsed.dentalRecords || [],
+    doctorRequests: parsed.doctorRequests || [],
   };
 }
 
@@ -109,4 +157,4 @@ export function calcAge(dateOfBirth?: string) {
   return age;
 }
 
-export type { DatabaseData, DoctorRecord, AppointmentRecord, ChatRecord, PatientRecord, LoyaltyRecord };
+export type { DatabaseData, GameRecord, RewardConfig, DentalRecord, ToothData, ToothStatus, DoctorRecord, AppointmentRecord, ChatRecord, PatientRecord, LoyaltyRecord };

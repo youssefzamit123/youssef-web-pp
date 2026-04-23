@@ -3,17 +3,20 @@
 import { useAppContext } from '@/lib/context';
 import { RiskBadge } from '@/components/common/risk-badge';
 import type { Patient } from '@/lib/types';
+import { useRouter } from 'next/navigation';
+
 
 interface PatientsTableProps {
   patients: Patient[];
 }
 
 export function PatientsTable({ patients }: PatientsTableProps) {
-  const { setSelectedPatient, setCurrentPage } = useAppContext();
+  const router = useRouter();
+  const { setSelectedPatient } = useAppContext();
 
   const handleRowClick = (patient: Patient) => {
     setSelectedPatient(patient);
-    setCurrentPage('patient-detail');
+    router.push('/patient-detail');
   };
 
   return (

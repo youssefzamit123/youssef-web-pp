@@ -3,6 +3,8 @@
 import { ReactNode, useState } from 'react';
 import { AppContext } from '@/lib/context';
 import type { User, Patient, AppPage } from '@/lib/types';
+import { useRouter } from 'next/navigation';
+
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [currentPage, setCurrentPage] = useState<AppPage>('landing');

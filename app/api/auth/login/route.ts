@@ -11,13 +11,23 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as LoginPayload;
 
-    if (!body.email || !body.role) {
-      return NextResponse.json({ error: 'Email et role requis' }, { status: 400 });
+    if (!body.email) {
+      return NextResponse.json({ error: 'Email requis' }, { status: 400 });
     }
 
     const db = await readDatabase();
+    
+    // Check pending requests
+    const pendingRequest = db.doctorRequests.find(
+      r => r.email.toLowerCase() === body.email!.toLowerCase() && r.status === 'pending'
+    );
+    
+    if (pendingRequest) {
+      return NextResponse.json({ error: 'Compte en attente d\'approbation par un administrateur' }, { status: 403 });
+    }
+    
     const user = db.users.find(
-      u => u.email.toLowerCase() === body.email!.toLowerCase() && u.role === body.role
+      u => u.email.toLowerCase() === body.email!.toLowerCase()
     );
 
     if (!user) {

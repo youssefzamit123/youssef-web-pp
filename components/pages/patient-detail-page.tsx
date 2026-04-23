@@ -7,9 +7,13 @@ import { RiskBadge } from '@/components/common/risk-badge';
 import { XrayViewer } from './patient-detail/xray-viewer';
 import { PatientInfoCard } from './patient-detail/patient-info-card';
 import { RiskPredictionCard } from './patient-detail/risk-prediction-card';
+import { useRouter } from 'next/navigation';
+import { Download } from 'lucide-react';
+
 
 export function PatientDetailPage() {
-  const { selectedPatient, setCurrentPage } = useAppContext();
+  const router = useRouter();
+  const { selectedPatient } = useAppContext();
 
   if (!selectedPatient) {
     return (
@@ -23,7 +27,7 @@ export function PatientDetailPage() {
             Sélectionnez un patient depuis le tableau de bord
           </p>
           <button
-            onClick={() => setCurrentPage('home')}
+            onClick={() => router.push('/home')}
             className="px-6 py-2.5 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-all text-sm"
           >
             Retour au tableau de bord
@@ -34,12 +38,21 @@ export function PatientDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-secondary/50">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <BackButton />
+    <div className="min-h-screen bg-secondary/50 print:bg-white print:m-0">
+      <div className="max-w-7xl mx-auto px-6 py-8 print:p-0">
+        <div className="flex items-center justify-between mb-6 print:hidden">
+          <BackButton />
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg font-medium hover:bg-primary/90 transition-all text-sm"
+          >
+            <Download className="w-4 h-4" />
+            Télécharger le rapport PDF
+          </button>
+        </div>
 
         {/* Patient Profile Banner */}
-        <div className="bg-card text-card-foreground rounded-xl border border-border/50 p-8 mb-8 shadow-sm">
+        <div className="bg-card text-card-foreground rounded-xl border border-border/50 p-8 mb-8 shadow-sm print:shadow-none print:border-b-2 print:border-b-gray-200 print:rounded-none">
           <div className="flex items-start gap-6">
             <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
               <span className="text-2xl font-bold text-primary">

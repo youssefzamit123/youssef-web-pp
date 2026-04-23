@@ -1,4 +1,4 @@
-export type UserRole = 'Médecin' | 'Patient';
+export type UserRole = 'Médecin' | 'Patient' | 'Admin';
 export type RiskLevel = 'Élevé' | 'Modéré' | 'Faible';
 export type AppPage =
   | 'landing'
@@ -6,7 +6,19 @@ export type AppPage =
   | 'home'
   | 'patient-detail'
   | 'patient-dashboard'
-  | 'kids-zone';
+  | 'kids-zone'
+  | 'ai-smile'
+  | 'admin-dashboard';
+
+export interface DoctorAccountRequest {
+  id: string;
+  name: string;
+  email: string;
+  professionalId?: string;
+  specialty?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+}
 
 export interface User {
   id: string;
