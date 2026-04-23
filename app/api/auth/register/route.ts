@@ -33,6 +33,22 @@ export async function POST(request: Request) {
     const age = calcAge(body.dateNaissance);
     const isKid = body.role === 'Patient' && age < 12;
 
+    if (body.role === 'Médecin') {
+      const existingRequest = db.doctorRequests.find(r => r.email.toLowerCase() === body.email!.toLowerCase());
+      if (existingRequest) {
+        return NextResponse.json({ success: true, pendingApproval: true, message: 'Demande déjà envoyée' });
+      }
+      db.doctorRequests.push({
+        id: makeId('req'),
+        name,
+        email: body.email!,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      });
+      await writeDatabase(db);
+      return NextResponse.json({ success: true, pendingApproval: true, message: 'Demande en attente d\'approbation par un administrateur.' });
+    }
+
     let user = db.users.find(
       u => u.email.toLowerCase() === body.email!.toLowerCase() && u.role === body.role
     );

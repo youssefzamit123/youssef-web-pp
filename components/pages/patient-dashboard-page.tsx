@@ -174,10 +174,10 @@ export function PatientDashboardPage() {
 
   const cardColor =
     fidelityTier === 'Or'
-      ? 'from-amber-500 to-yellow-400'
+      ? 'from-yellow-400 via-amber-500 to-yellow-600'
       : fidelityTier === 'Argent'
-        ? 'from-slate-400 to-slate-300'
-        : 'from-orange-600 to-orange-400';
+        ? 'from-slate-300 via-slate-400 to-slate-500'
+        : 'from-orange-400 via-orange-500 to-orange-600';
 
   const handleCollectReward = async (rewardId: string) => {
     if (!user?.email) return;

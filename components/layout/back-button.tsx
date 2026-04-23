@@ -2,13 +2,16 @@
 
 import { ChevronLeft } from 'lucide-react';
 import { useAppContext } from '@/lib/context';
+import { useRouter } from 'next/navigation';
+
 
 export function BackButton() {
-  const { setCurrentPage, setSelectedPatient } = useAppContext();
+  const router = useRouter();
+  const { setSelectedPatient } = useAppContext();
 
   const handleBack = () => {
     setSelectedPatient(null);
-    setCurrentPage('home');
+    router.push('/home');
   };
 
   return (

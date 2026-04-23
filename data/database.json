@@ -43,6 +43,28 @@
       "localisation": "tunis",
       "relations": "ALI BEN SALAH",
       "isKid": true
+    },
+    {
+      "id": "user_1775749730526_7537",
+      "name": "Ben Najjar Ali",
+      "email": "mohamedamine.hadda@esprim.tn",
+      "role": "Médecin",
+      "avatar": "BA",
+      "dateOfBirth": "2026-04-21",
+      "localisation": "bkalta",
+      "relations": "ALI BEN SALAH",
+      "isKid": false
+    },
+    {
+      "id": "user_1776330049819_979",
+      "name": "abdelkrim mars",
+      "email": "abdelkarim.mars@esprim.tn",
+      "role": "Patient",
+      "avatar": "AM",
+      "dateOfBirth": "2007-05-16",
+      "localisation": "bkalta",
+      "relations": "ALI BEN SALAH",
+      "isKid": false
     }
   ],
   "doctors": [
@@ -122,6 +144,23 @@
       "doctor": "Dr. Rami Benayed",
       "insurance": "CNAM",
       "patientEmail": "oumaima.bentili@enim.u-monastir.tn"
+    },
+    {
+      "id": "patient_1776330049819_4912",
+      "name": "abdelkrim mars",
+      "age": 18,
+      "gender": "M",
+      "cin": "00000000",
+      "reference": "REF684",
+      "riskScore": 48,
+      "riskLevel": "Modéré",
+      "lastVisit": "2026-04-16",
+      "dateOfBirth": "2007-05-16",
+      "phone": "",
+      "medicalHistory": "Aucune",
+      "doctor": "Dr. Rami Benayed",
+      "insurance": "CNAM",
+      "patientEmail": "abdelkarim.mars@esprim.tn"
     }
   ],
   "appointments": [
@@ -145,6 +184,14 @@
       "from": "doctor",
       "text": "Bonjour, je suis votre dentiste. Posez-moi vos questions.",
       "timestamp": "2026-04-08T18:00:00.000Z"
+    },
+    {
+      "id": "chat_1776329887337_8928",
+      "doctorId": "d1",
+      "patientEmail": "oumaima.bentili@enim.u-monastir.tn",
+      "from": "patient",
+      "text": "bonjour",
+      "timestamp": "2026-04-16T08:58:07.337Z"
     }
   ],
   "activityFeed": [
@@ -161,5 +208,22 @@
       "timestamp": "2026-04-08 13:45"
     }
   ],
-  "loyalty": []
+  "loyalty": [
+    {
+      "patientEmail": "oumaima.bentili@enim.u-monastir.tn",
+      "role": "kid",
+      "points": 12,
+      "minutesSpent": 3,
+      "collectedRewards": [],
+      "lastHeartbeatAt": "2026-04-16T08:58:37.377Z"
+    },
+    {
+      "patientEmail": "abdelkarim.mars@esprim.tn",
+      "role": "adult",
+      "points": 2,
+      "minutesSpent": 1,
+      "collectedRewards": [],
+      "lastHeartbeatAt": "2026-04-16T09:01:49.862Z"
+    }
+  ]
 }

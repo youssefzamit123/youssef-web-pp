@@ -16,9 +16,11 @@ import {
   Sun,
 } from 'lucide-react';
 import { useTheme } from '@/components/theme-provider';
+import { useRouter } from 'next/navigation';
+
 
 export function LandingPage() {
-  const { setCurrentPage } = useAppContext();
+  const router = useRouter();
   const { resolvedTheme, setTheme } = useTheme();
 
   return (
@@ -56,13 +58,13 @@ export function LandingPage() {
               {resolvedTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
             <button
-              onClick={() => setCurrentPage('login')}
+              onClick={() => router.push('/login')}
               className="px-6 py-2.5 border border-border bg-card text-foreground font-semibold rounded-lg hover:bg-secondary transition-all text-sm"
             >
               Créer un compte
             </button>
             <button
-              onClick={() => setCurrentPage('login')}
+              onClick={() => router.push('/login')}
               className="px-6 py-2.5 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-all hover:shadow-lg hover:shadow-primary/25 text-sm"
             >
               Connexion
@@ -100,7 +102,7 @@ export function LandingPage() {
 
               <div className="flex flex-col sm:flex-row gap-4">
                 <button
-                  onClick={() => setCurrentPage('login')}
+                  onClick={() => router.push('/login')}
                   className="group px-8 py-4 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all hover:shadow-xl hover:shadow-primary/25 text-base flex items-center justify-center gap-3"
                 >
                   Commencer maintenant
@@ -386,7 +388,7 @@ export function LandingPage() {
               leurs soins dentaires.
             </p>
             <button
-              onClick={() => setCurrentPage('login')}
+              onClick={() => router.push('/login')}
               className="group px-10 py-4 bg-white text-[#0A6EBD] font-bold rounded-xl hover:bg-white/90 transition-all text-base inline-flex items-center gap-3 shadow-lg"
             >
               Créer un compte gratuitement
