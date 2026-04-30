@@ -2,20 +2,35 @@
 
 import { useAppContext } from '@/lib/context';
 import { useTheme } from '@/components/theme-provider';
-import { LogOut, Home, User, LayoutDashboard, Moon, Sun, Settings, MessageCircle, Users } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { LogOut, Home, User, LayoutDashboard, Moon, Sun, Settings, MessageCircle, Users, Gift, Gamepad2, ScanSearch } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+
+function readStoredUser() {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const raw = window.localStorage.getItem('dentai-user');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
 
 
 export function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
   const { currentPage, user, selectedPatient, setUser, setSelectedPatient } = useAppContext();
   const { resolvedTheme, setTheme } = useTheme();
+  const storedUser = readStoredUser();
+  const activeUser = user || storedUser;
 
-  if (!user || (typeof window !== 'undefined' && (window.location.pathname === '/login' || window.location.pathname === '/'))) {
+  if (pathname === '/login' || pathname === '/') {
     return null;
   }
 
-  const isPatient = user?.role === 'Patient';
+  const isPatient = activeUser?.role === 'Patient' || !activeUser;
+  const isKid = !!activeUser?.isKid;
 
   const handleLogout = () => {
     setUser(null);
@@ -25,7 +40,12 @@ export function Navbar() {
 
   const handleHome = () => {
     setSelectedPatient(null);
-    if (user?.isKid) {
+    if (!activeUser) {
+      router.push('/login');
+      return;
+    }
+
+    if (activeUser.isKid) {
       router.push('/kids-zone');
     } else if (isPatient) {
       router.push('/patient-dashboard');
@@ -35,25 +55,15 @@ export function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-6 py-3 print:hidden">
+    <nav className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-lg border-b border-border/50 px-6 py-3 print:hidden">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          {/* Logo */}
-          <button onClick={handleHome} className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center shadow-sm">
-              <span className="text-white text-sm font-bold">D</span>
-            </div>
-            <span className="text-lg font-bold text-foreground tracking-tight">
-              Dent<span className="text-primary">AI</span>
-            </span>
-          </button>
-
+        <div className="flex items-center gap-2">
           {/* Navigation links */}
           {!isPatient && (
-            <div className="hidden md:flex items-center gap-1">
+            <div className="flex max-w-full items-center gap-1 overflow-x-auto whitespace-nowrap">
               <button
                 onClick={handleHome}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   typeof window !== 'undefined' && window.location.pathname === '/home'
                     ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
@@ -65,7 +75,7 @@ export function Navbar() {
               
               <button
                 onClick={() => router.push('/network')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   typeof window !== 'undefined' && window.location.pathname === '/network'
                     ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
@@ -77,7 +87,7 @@ export function Navbar() {
 
               <button
                 onClick={() => router.push('/messages')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   typeof window !== 'undefined' && window.location.pathname === '/messages'
                     ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
@@ -87,10 +97,22 @@ export function Navbar() {
                 Messages
               </button>
 
+              <button
+                onClick={() => router.push('/ai-smile')}
+                className={`shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  typeof window !== 'undefined' && window.location.pathname === '/ai-smile'
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                }`}
+              >
+                <ScanSearch className="w-4 h-4" />
+                Analyse IA
+              </button>
+
               {selectedPatient && (
                 <button
                   onClick={() => router.push('/patient-detail')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     typeof window !== 'undefined' && window.location.pathname === '/patient-detail'
                       ? 'bg-primary/10 text-primary'
                       : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
@@ -104,22 +126,21 @@ export function Navbar() {
           )}
 
           {isPatient && (
-            <div className="hidden md:flex items-center gap-1">
+            <div className="flex max-w-full items-center gap-1 overflow-x-auto whitespace-nowrap">
               <button
                 onClick={handleHome}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  typeof window !== 'undefined' && window.location.pathname === '/patient-dashboard' || typeof window !== 'undefined' && window.location.pathname === '/kids-zone'
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                }`}
+                className={`shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${(
+                  pathname === '/patient-dashboard' ||
+                  pathname === '/kids-zone'
+                ) ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'}`}
               >
                 <LayoutDashboard className="w-4 h-4" />
-                {user?.isKid ? 'Mon univers' : 'Mon espace'}
+                {activeUser?.isKid ? 'Mon univers' : 'Mon espace'}
               </button>
 
               <button
                 onClick={() => router.push('/network')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   typeof window !== 'undefined' && window.location.pathname === '/network'
                     ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
@@ -131,7 +152,7 @@ export function Navbar() {
 
               <button
                 onClick={() => router.push('/messages')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   typeof window !== 'undefined' && window.location.pathname === '/messages'
                     ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
@@ -140,6 +161,32 @@ export function Navbar() {
                 <MessageCircle className="w-4 h-4" />
                 Messages
               </button>
+
+              <button
+                onClick={() => router.push('/ai-smile')}
+                className={`shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  typeof window !== 'undefined' && window.location.pathname === '/ai-smile'
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                }`}
+              >
+                <ScanSearch className="w-4 h-4" />
+                Analyse IA
+              </button>
+
+              {isKid && (
+                <button
+                  onClick={() => router.push('/kids-zone/rewards')}
+                  className={`shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    typeof window !== 'undefined' && window.location.pathname === '/kids-zone/rewards'
+                      ? 'bg-amber-100 text-amber-800'
+                      : 'text-amber-700 hover:text-amber-900 hover:bg-amber-50'
+                  }`}
+                >
+                  <Gift className="w-4 h-4" />
+                  Redeem mes étoiles
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -154,18 +201,25 @@ export function Navbar() {
             {resolvedTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
           <div className="hidden sm:block text-right mr-1">
-            <p className="text-sm font-semibold text-foreground leading-tight">{user?.name}</p>
-            <p className="text-xs text-muted-foreground">{user?.role === 'Médecin' ? 'Dentiste' : user?.role}</p>
+            <p className="text-sm font-semibold text-foreground leading-tight">{activeUser?.name || 'Utilisateur'}</p>
+            <p className="text-xs text-muted-foreground">{activeUser?.role === 'Médecin' ? 'Dentiste' : activeUser?.role || 'Session'}</p>
           </div>
           <div className="w-9 h-9 rounded-full bg-primary/15 flex items-center justify-center">
-            <span className="text-xs font-bold text-primary">{user?.avatar || 'U'}</span>
+            <span className="text-xs font-bold text-primary">{activeUser?.avatar || 'U'}</span>
           </div>
+          <button
+            onClick={() => router.push('/ai-config')}
+            className="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+            title="Configuration IA"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
           <button
             onClick={() => router.push('/profile')}
             className="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
             title="Mon Profil"
           >
-            <Settings className="w-4 h-4" />
+            <User className="w-4 h-4" />
           </button>
           <button
             onClick={handleLogout}
